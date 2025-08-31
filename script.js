@@ -20,64 +20,72 @@ class NutritionTracker {
         this.updateDailyTotals();
     }
 
-    // Привязка событий
+        // Привязка событий
     bindEvents() {
-        // Кнопка добавления записи
+        // Кнопка открытия drawer
         document.getElementById('newNoteButton').addEventListener('click', () => {
             this.openDrawer();
         });
 
-        // Кнопка добавления записи в модальном окне
+        // Кнопка добавления/сохранения записи
         document.getElementById('addNoteButton').addEventListener('click', () => {
-            this.addMealNote();
+            if (this.currentEditId) {
+                this.saveEditedNote();
+            } else {
+                this.addMealNote();
+            }
         });
 
-        // Закрытие модального окна при клике вне его
+        // Закрытие drawer при клике вне содержимого
         document.getElementById('newNoteDrawer').addEventListener('click', (e) => {
             if (e.target.id === 'newNoteDrawer') {
                 this.closeDrawer();
             }
         });
 
-        // Обработка ввода в полях КБЖУ
+        // Поля для ввода БЖУ
         const inputs = ['proteinInput', 'fatInput', 'carbInput'];
         inputs.forEach((id, index) => {
             const inputEl = document.getElementById(id);
+
+            // Ввод и автопереход
             inputEl.addEventListener('input', () => {
                 this.updateCaloriesCalculation();
                 this.updateLeftValues();
 
-                // Автопереход для белков и жиров
-                if ((id === 'proteinInput' || id === 'fatInput')) {
-                    if (inputEl.value.length >= 2) {
-                        const nextInput = document.getElementById(inputs[index + 1]);
-                        if (nextInput) {
-                            nextInput.focus();
-                        }
-                    }
+                // Автопереход вправо (для белков и жиров)
+                if ((id === 'proteinInput' || id === 'fatInput') && inputEl.value.length >= 2) {
+                    const nextInput = document.getElementById(inputs[index + 1]);
+                    if (nextInput) nextInput.focus();
                 }
+            });
 
-                // Автовозврат: если стерли все символы
-                if (inputEl.value.length === 0 && index > 0) {
-                    const prevInput = document.getElementById(inputs[index - 1]);
-                    if (prevInput) {
-                        prevInput.focus();
+            // Навигация по стрелкам и Enter
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // чтобы не срабатывал submit на мобилке
+                    if (index < inputs.length - 1) {
+                        // Enter → следующее поле
+                        document.getElementById(inputs[index + 1]).focus();
+                    } else {
+                        // Enter на углеводах → сохранить
+                        document.getElementById('addNoteButton').click();
                     }
                 }
             });
         });
 
-        // Обработка ввода описания
+        // Поле описания
         document.getElementById('descriptionInput').addEventListener('input', () => {
             this.updateLeftValues();
         });
 
         // Контекстное меню
         this.setupContextMenu();
-        
-        // Свайп для удаления на мобильных устройствах
+
+        // Свайп для удаления на мобилке
         this.setupSwipeToDelete();
-        
+
         // Закрытие контекстного меню при клике вне его
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.context-menu') && !e.target.closest('.meal_note')) {
@@ -86,23 +94,73 @@ class NutritionTracker {
         });
     }
 
+    saveEditedNote() {
+        if (!this.currentEditId) return;
+    
+        const protein = parseInt(document.getElementById('proteinInput').value) || 0;
+        const fat = parseInt(document.getElementById('fatInput').value) || 0;
+        const carbs = parseInt(document.getElementById('carbInput').value) || 0;
+        const description = document.getElementById('descriptionInput').value || '';
+    
+        const cals_line = this.calculateCalories(protein, fat, carbs);
+    
+        // обновляем нужную запись
+        this.mealNotes = this.mealNotes.map(note => {
+            if (note.id === this.currentEditId) {
+                return {
+                    ...note,
+                    nutri_values: { protein, fat, carbs },
+                    cals_line,
+                    description,
+                    settime: new Date().toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                };
+            }
+            return note;
+        });
+    
+        this.saveToStorage();
+        this.renderMealNotes();
+        this.updateDailyTotals();
+        this.closeDrawer();
+    
+        this.currentEditId = null; // сброс контекста
+    }
+    
+    
+
     // Открытие модального окна
-    openDrawer() {
-        document.getElementById('newNoteDrawer').classList.add('active');
+    openDrawer(isEdit = false) {
+        const drawer = document.getElementById('newNoteDrawer');
+        drawer.classList.add('active');
         document.body.style.overflow = 'hidden';
-        
-        // Сброс значений
-        if (!this.currentEditId) {
+    
+        if (!isEdit) {
+            // Новый контекст → очистка формы и сброс id
             this.resetForm();
+            this.currentEditId = null;
         }
+    
         this.updateLeftValues();
         this.updateButtonText();
+    
+        // Автофокус на белки
+        const proteinInput = document.getElementById('proteinInput');
+        if (proteinInput) proteinInput.focus();
     }
 
     // Закрытие модального окна
     closeDrawer() {
-        document.getElementById('newNoteDrawer').classList.remove('active');
-        document.body.style.overflow = 'auto';
+        const drawer = document.getElementById('newNoteDrawer');
+        drawer.classList.remove('active');
+        document.body.style.overflow = '';
+    
+        // Если мы закрыли drawer в режиме "новой записи" — очистим форму
+        if (!this.currentEditId) {
+            this.resetForm();
+        }
     }
 
     // Сброс формы
@@ -177,29 +235,16 @@ class NutritionTracker {
             return;
         }
 
-        if (this.currentEditId) {
-            // Редактирование существующей записи
-            const noteIndex = this.mealNotes.findIndex(note => note.id === this.currentEditId);
-            if (noteIndex !== -1) {
-                this.mealNotes[noteIndex] = {
-                    ...this.mealNotes[noteIndex],
-                    nutri_values: { protein, fat, carbs },
-                    cals_line: this.calculateCalories(protein, fat, carbs),
-                    description: description || ''
-                };
-            }
-            this.currentEditId = null;
-        } else {
-            // Добавление новой записи
-            const mealNote = {
-                id: Date.now(),
-                nutri_values: { protein, fat, carbs },
-                cals_line: this.calculateCalories(protein, fat, carbs),
-                description: description || '',
-                settime: this.getCurrentTime()
-            };
-            this.mealNotes.push(mealNote);
-        }
+        const mealNote = {
+            id: Date.now(),
+            nutri_values: { protein, fat, carbs },
+            cals_line: this.calculateCalories(protein, fat, carbs),
+            description: description || '',
+            settime: this.getCurrentTime()
+        };
+        
+        this.mealNotes.push(mealNote);
+        
 
         this.saveToStorage();
         this.renderMealNotes();
@@ -333,19 +378,20 @@ class NutritionTracker {
         document.getElementById('proteinInput').value = note.nutri_values.protein;
         document.getElementById('fatInput').value = note.nutri_values.fat;
         document.getElementById('carbInput').value = note.nutri_values.carbs;
-        document.getElementById('descriptionInput').value = note.description;
+        document.getElementById('descriptionInput').value = note.description || '';
         this.updateCaloriesCalculation();
         this.updateLeftValues();
         this.updateButtonText();
     }
+    
 
     // Обновление текста кнопки
     updateButtonText() {
-        const button = document.getElementById('addNoteButton');
+        const btn = document.getElementById('addNoteButton');
         if (this.currentEditId) {
-            button.textContent = 'Сохранить изменения';
+            btn.textContent = 'Сохранить запись';
         } else {
-            button.textContent = 'Добавить запись';
+            btn.textContent = 'Добавить запись';
         }
     }
 
@@ -383,14 +429,22 @@ class NutritionTracker {
     renderMealNotes() {
         const container = document.getElementById('mealNotesList');
         container.innerHTML = '';
-
+    
         if (this.mealNotes.length === 0) {
             container.innerHTML = '<div style="text-align: center; color: rgba(26, 26, 26, 0.6); padding: 20px;">Нет записей</div>';
             return;
         }
-
+    
         this.mealNotes.forEach(note => {
             const noteElement = this.createMealNoteElement(note);
+        
+            // Клик по карточке → редактирование
+            noteElement.addEventListener('click', () => {
+                this.currentEditId = note.id;     // сохраняем id
+                this.fillFormWithNote(note);      // правильная функция
+                this.openDrawer(true);            // редактирование
+            });
+        
             container.appendChild(noteElement);
         });
     }
