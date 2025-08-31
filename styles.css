@@ -350,6 +350,10 @@ body {
     margin: 0;
 }
 
+.amount_input::placeholder {
+    color: rgba(26, 26, 26, 0.3);
+}
+
 .left {
     font-weight: 500;
     font-size: 18px;
@@ -372,7 +376,7 @@ body {
     background: transparent;
     font-weight: 500;
     font-size: 16px;
-    color: rgba(26, 26, 26, 0.3);
+    color: #1A1A1A;
     outline: none;
     resize: vertical;
     font-family: inherit;

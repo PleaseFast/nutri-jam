@@ -73,7 +73,9 @@ class NutritionTracker {
         document.body.style.overflow = 'hidden';
         
         // Сброс значений
-        this.resetForm();
+        if (!this.currentEditId) {
+            this.resetForm();
+        }
         this.updateLeftValues();
         this.updateButtonText();
     }
@@ -86,9 +88,9 @@ class NutritionTracker {
 
     // Сброс формы
     resetForm() {
-        document.getElementById('proteinInput').value = 0;
-        document.getElementById('fatInput').value = 0;
-        document.getElementById('carbInput').value = 0;
+        document.getElementById('proteinInput').value = '';
+        document.getElementById('fatInput').value = '';
+        document.getElementById('carbInput').value = '';
         document.getElementById('descriptionInput').value = '';
         document.getElementById('calInputDisplay').textContent = '0';
         this.currentEditId = null;
@@ -119,11 +121,23 @@ class NutritionTracker {
         // Получаем текущие дневные значения
         const dailyTotals = this.getDailyTotals();
 
+        // При редактировании нужно исключить значения редактируемой записи из дневных итогов
+        let adjustedTotals = { ...dailyTotals };
+        if (this.currentEditId) {
+            const editingNote = this.mealNotes.find(note => note.id === this.currentEditId);
+            if (editingNote) {
+                adjustedTotals.protein -= editingNote.nutri_values.protein;
+                adjustedTotals.fat -= editingNote.nutri_values.fat;
+                adjustedTotals.carbs -= editingNote.nutri_values.carbs;
+                adjustedTotals.calories -= editingNote.cals_line;
+            }
+        }
+
         // Рассчитываем остаток
-        const proteinLeft = GOALS.PROTEIN - dailyTotals.protein - protein;
-        const fatLeft = GOALS.FAT - dailyTotals.fat - fat;
-        const carbsLeft = GOALS.CARBS - dailyTotals.carbs - carbs;
-        const caloriesLeft = GOALS.CALORIES - dailyTotals.calories - calories;
+        const proteinLeft = GOALS.PROTEIN - adjustedTotals.protein - protein;
+        const fatLeft = GOALS.FAT - adjustedTotals.fat - fat;
+        const carbsLeft = GOALS.CARBS - adjustedTotals.carbs - carbs;
+        const caloriesLeft = GOALS.CALORIES - adjustedTotals.calories - calories;
 
         // Обновляем отображение
         document.getElementById('proteinLeft').textContent = `${proteinLeft > 0 ? '+' : ''}${proteinLeft} г`;
