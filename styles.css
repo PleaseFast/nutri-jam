@@ -32,7 +32,6 @@ body {
     border-radius: 10px;
     padding: 12px;
     margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     height: 118px;
     display: flex;
     align-items: center;
@@ -57,7 +56,6 @@ body {
 .carbs_counter {
     background: none;
     border-radius: 0;
-    padding: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -150,16 +148,14 @@ body {
     background-color: #FFFFFF;
     border-radius: 10px;
     padding: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
     position: relative;
     overflow: hidden;
 }
 
 .meal_note:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .meal_note:active {
@@ -328,7 +324,6 @@ body {
     border-radius: 10px;
     padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .nutri_notes_entry_core {
@@ -368,7 +363,6 @@ body {
     border-radius: 10px;
     padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .description_text {

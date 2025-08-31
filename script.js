@@ -152,7 +152,7 @@ class NutritionTracker {
                     ...this.mealNotes[noteIndex],
                     nutri_values: { protein, fat, carbs },
                     cals_line: this.calculateCalories(protein, fat, carbs),
-                    description: description || 'Без описания'
+                    description: description || ''
                 };
             }
             this.currentEditId = null;
@@ -162,7 +162,7 @@ class NutritionTracker {
                 id: Date.now(),
                 nutri_values: { protein, fat, carbs },
                 cals_line: this.calculateCalories(protein, fat, carbs),
-                description: description || 'Без описания',
+                description: description || '',
                 settime: this.getCurrentTime()
             };
             this.mealNotes.push(mealNote);
@@ -367,7 +367,9 @@ class NutritionTracker {
         const div = document.createElement('div');
         div.className = 'meal_note';
         div.dataset.noteId = note.id;
-        div.innerHTML = `
+        
+        // Формируем HTML с условным отображением описания
+        let html = `
             <div class="nutri_values_settime">
                 <div class="nutri_values">
                     <div class="nutri_tag proteins">
@@ -388,10 +390,18 @@ class NutritionTracker {
             <div class="cals_line">
                 <div class="kcals_value">${note.cals_line.toLocaleString()} ккал</div>
             </div>
-            <div class="description">
-                <div class="desc_text">${note.description}</div>
-            </div>
         `;
+        
+        // Добавляем описание только если оно задано и не равно "Без описания"
+        if (note.description && note.description.trim() !== '' && note.description !== 'Без описания') {
+            html += `
+                <div class="description">
+                    <div class="desc_text">${note.description}</div>
+                </div>
+            `;
+        }
+        
+        div.innerHTML = html;
         
         // Добавляем обработчик клика для редактирования
         div.addEventListener('click', () => {
