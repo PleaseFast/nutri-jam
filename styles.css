@@ -41,14 +41,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
     width: 100%;
 }
 
 .nutri_counter {
     display: flex;
     gap: 8px;
-    flex: 1;
 }
 
 .proteins_counter,
@@ -98,7 +96,6 @@ body {
     width: 2px;
     height: 52px;
     background-color: rgba(26, 26, 26, 0.16);
-    margin: 0 8px;
 }
 
 .cals_counter {
@@ -489,7 +486,7 @@ body {
 }
 
 /* Адаптивность */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
     .app {
         max-width: 100%;
     }
@@ -543,8 +540,8 @@ body {
         flex-direction: row;
         gap: 8px;
     }
-}
-
+} */
+/* 
 @media (max-width: 360px) {
     .nutri_values {
         flex-direction: column;
@@ -569,7 +566,7 @@ body {
     .desc_text {
         font-size: 14px;
     }
-}
+} */
 
 /* Темная тема */
 @media (prefers-color-scheme: dark) {
