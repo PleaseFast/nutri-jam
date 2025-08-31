@@ -41,10 +41,29 @@ class NutritionTracker {
 
         // Обработка ввода в полях КБЖУ
         const inputs = ['proteinInput', 'fatInput', 'carbInput'];
-        inputs.forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
+        inputs.forEach((id, index) => {
+            const inputEl = document.getElementById(id);
+            inputEl.addEventListener('input', () => {
                 this.updateCaloriesCalculation();
                 this.updateLeftValues();
+
+                // Автопереход для белков и жиров
+                if ((id === 'proteinInput' || id === 'fatInput')) {
+                    if (inputEl.value.length >= 2) {
+                        const nextInput = document.getElementById(inputs[index + 1]);
+                        if (nextInput) {
+                            nextInput.focus();
+                        }
+                    }
+                }
+
+                // Автовозврат: если стерли все символы
+                if (inputEl.value.length === 0 && index > 0) {
+                    const prevInput = document.getElementById(inputs[index - 1]);
+                    if (prevInput) {
+                        prevInput.focus();
+                    }
+                }
             });
         });
 
