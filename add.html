@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Добавить запись</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Ввод КБЖУ -->
+    <div class="nutri_values_entry">
+      <div class="nutri_notes_entry_core">
+        <div class="nutri_counter">
+          <div class="proteins_counter">
+            <div class="protein_label">Б</div>
+            <div class="protein_space">
+              <input type="number" class="amount_input" id="proteinInput" placeholder="0" min="0">
+              <div class="left" id="proteinLeft">-145 г</div>
+            </div>
+          </div>
+          <div class="fats_counter">
+            <div class="fat_label">Ж</div>
+            <div class="fat_space">
+              <input type="number" class="amount_input" id="fatInput" placeholder="0" min="0">
+              <div class="left" id="fatLeft">-65 г</div>
+            </div>
+          </div>
+          <div class="carbs_counter">
+            <div class="carb_label">У</div>
+            <div class="carb_space">
+              <input type="number" class="amount_input" id="carbInput" placeholder="0" min="0">
+              <div class="left" id="carbLeft">-408 г</div>
+            </div>
+          </div>
+        </div>
+        <div class="separator"></div>
+        <div class="cals_counter">
+          <div class="cal_label">КАЛ</div>
+          <div class="cals_space">
+            <div class="amount" id="calInputDisplay">0</div>
+            <div class="left" id="calLeft">-2800</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Описание -->
+    <div class="nutri_notes_description_set">
+      <textarea class="description_text" id="descriptionInput" placeholder="Описание еды"></textarea>
+    </div>
+
+    <!-- Кнопка добавления -->
+    <div class="button_sheet">
+      <button class="button_primary" id="addNoteButton">Добавить запись</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
