@@ -466,6 +466,35 @@ body {
     background-color: #FFE6E6;
 }
 
+.days_timeline {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px;
+    margin-bottom: 16px;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .day_item {
+    min-width: 70px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-weight: 500;
+    font-size: 14px;
+    scroll-snap-align: center;
+    transition: background 0.2s;
+  }
+  
+  .day_item.active {
+    background: #4447F4;
+    color: #fff;
+  }
+  
+
 /* Анимации */
 @keyframes fadeIn {
     from {

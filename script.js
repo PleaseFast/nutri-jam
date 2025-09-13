@@ -11,6 +11,8 @@ const GOALS = {
     CALORIES: 2799
 };
 
+let currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, сегодня
+
 document.addEventListener('DOMContentLoaded', () => {
     // detect which page we are on
     if (document.getElementById('addNoteButton')) {
@@ -21,13 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------------- shared helpers ---------------- */
-function loadNotes() {
+function loadNotes(date = currentDate) {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const all = raw ? JSON.parse(raw) : {};
+    return all[date] || [];
 }
 
-function saveNotes(notes) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+function saveNotes(date = currentDate, notes) { 
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const all = raw ? JSON.parse(raw) : {};
+    all[date] = notes;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 }
 
 function calculateCalories(protein, fat, carbs) {
@@ -38,9 +44,11 @@ function getCurrentTime() {
     return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 }
 
-function getDailyTotalsExcluding(editId = null) {
-    const notes = loadNotes();
+// считает суммы по текущему дню
+function getDailyTotalsExcluding(editId = null, date = currentDate) {
+    const notes = loadNotes(date);
     const totals = { protein: 0, fat: 0, carbs: 0, calories: 0 };
+
     notes.forEach(n => {
         totals.protein += (n.nutri_values && n.nutri_values.protein) ? n.nutri_values.protein : 0;
         totals.fat += (n.nutri_values && n.nutri_values.fat) ? n.nutri_values.fat : 0;
@@ -61,8 +69,8 @@ function getDailyTotalsExcluding(editId = null) {
     return totals;
 }
 
-function getDailyTotals() {
-    return getDailyTotalsExcluding(null);
+function getDailyTotals(date = currentDate) {
+    return getDailyTotalsExcluding(null, date);
 }
 
 /* ---------------- add.html ---------------- */
@@ -76,9 +84,11 @@ function setupAddPage() {
 
     let editId = localStorage.getItem(EDIT_KEY);
 
-    // If we came here to edit — preload
+    // preload при редактировании
     if (editId) {
-        const notes = loadNotes();
+        const savedDate = localStorage.getItem("currentDate");
+        const targetDate = savedDate || currentDate;
+        const notes = loadNotes(targetDate);
         const note = notes.find(n => String(n.id) === String(editId));
         if (note) {
             proteinInput.value = note.nutri_values.protein || 0;
@@ -102,7 +112,7 @@ function setupAddPage() {
         const carbs = parseFloat(carbInput.value) || 0;
         const calories = calculateCalories(protein, fat, carbs);
 
-        const adjusted = getDailyTotalsExcluding(editId);
+        const adjusted = getDailyTotalsExcluding(editId, currentDate);
 
         const proteinLeft = GOALS.PROTEIN - adjusted.protein - protein;
         const fatLeft = GOALS.FAT - adjusted.fat - fat;
@@ -114,10 +124,10 @@ function setupAddPage() {
         const carbLeftEl = document.getElementById('carbLeft');
         const calLeftEl = document.getElementById('calLeft');
 
-        if (proteinLeftEl) proteinLeftEl.textContent = `${proteinLeft > 0 ? '+' : ''}${proteinLeft} г`;
-        if (fatLeftEl) fatLeftEl.textContent = `${fatLeft > 0 ? '+' : ''}${fatLeft} г`;
-        if (carbLeftEl) carbLeftEl.textContent = `${carbsLeft > 0 ? '+' : ''}${carbsLeft} г`;
-        if (calLeftEl) calLeftEl.textContent = `${caloriesLeft > 0 ? '+' : ''}${caloriesLeft.toLocaleString()}`;
+        if (proteinLeftEl) proteinLeftEl.textContent = `${proteinLeft > 0 ? '-' : ''}${proteinLeft} г`;
+        if (fatLeftEl) fatLeftEl.textContent = `${fatLeft > 0 ? '-' : ''}${fatLeft} г`;
+        if (carbLeftEl) carbLeftEl.textContent = `${carbsLeft > 0 ? '-' : ''}${carbsLeft} г`;
+        if (calLeftEl) calLeftEl.textContent = `${caloriesLeft > 0 ? '-' : ''}${caloriesLeft.toLocaleString()}`;
     }
 
     function recalcCalories() {
@@ -167,7 +177,10 @@ function setupAddPage() {
         const description = (descriptionInput.value || '').trim();
         const cals = calculateCalories(protein, fat, carbs);
 
-        let notes = loadNotes();
+        const savedDate = localStorage.getItem("currentDate");
+        const targetDate = savedDate || currentDate;
+
+        let notes = loadNotes(targetDate);
 
         if (editId) {
             notes = notes.map(n => {
@@ -194,7 +207,7 @@ function setupAddPage() {
             notes.push(note);
         }
 
-        saveNotes(notes);
+        saveNotes(targetDate, notes);
         // после сохранения возвращаемся на главную
         window.location.href = 'index.html';
     });
@@ -215,13 +228,62 @@ function setupMainPage() {
     const editMenuItem = document.getElementById('editMenuItem');
     const deleteMenuItem = document.getElementById('deleteMenuItem');
     const newNoteButton = document.getElementById('newNoteButton');
+    const daysTimeline = document.getElementById('daysTimeline');
 
     let currentContextNoteId = null;
 
-    function renderMealNotes() {
-        const notes = loadNotes();
-        mealNotesList && (mealNotesList.innerHTML = '');
+    function renderDaysTimeline() {
 
+        daysTimeline.innerHTML = "";
+      
+        for (let i = -30; i <= 30; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+            const dateStr = date.toISOString().slice(0, 10);
+      
+            const dayNumber = date.getDate();
+            const weekday = date.toLocaleDateString("ru-RU", { weekday: "short" });
+            const monthNumber = date.getMonth() + 1;
+      
+            const div = document.createElement("div");
+            div.className = "day_item" + (dateStr === currentDate ? " active" : "");
+            div.dataset.date = dateStr;
+      
+            div.innerHTML = `
+                <div class="day_number">${dayNumber}.${monthNumber}</div>
+                <div class="day_week">${weekday}</div>
+            `;
+      
+            div.addEventListener("click", () => {
+                currentDate = dateStr;
+                localStorage.setItem("currentDate", currentDate);
+
+                document.querySelectorAll(".day_item").forEach(d => d.classList.remove("active"));
+                div.classList.add("active");
+
+                renderMealNotes();
+
+                div.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "center"
+                });
+            });
+                 
+            daysTimeline.appendChild(div);
+        }
+
+        const activeDay = daysTimeline.querySelector(".day_item.active");
+        if (activeDay) {
+            activeDay.scrollIntoView({ block: "nearest", inline: "center" });
+        }
+
+    }
+
+    function renderMealNotes() {
+        const notes = loadNotes(currentDate);
+        mealNotesList && (mealNotesList.innerHTML = '');
+        
         if (!mealNotesList) return;
 
         if (notes.length === 0) {
@@ -306,9 +368,9 @@ function setupMainPage() {
     }
 
     function deleteMealNote(id) {
-        let notes = loadNotes();
+        let notes = loadNotes(currentDate);
         notes = notes.filter(n => String(n.id) !== String(id));
-        saveNotes(notes);
+        saveNotes(currentDate, notes);
         renderMealNotes();
     }
 
@@ -389,7 +451,7 @@ function setupMainPage() {
     }
 
     function updateDailyTotals() {
-        const totals = getDailyTotals();
+        const totals = getDailyTotals(currentDate);
         if (proteinAmount) proteinAmount.textContent = Math.round(totals.protein);
         if (fatAmount) fatAmount.textContent = Math.round(totals.fat);
         if (carbAmount) carbAmount.textContent = Math.round(totals.carbs);
@@ -406,7 +468,12 @@ function setupMainPage() {
     }
 
     // инициализация
+    const savedDate = localStorage.getItem("currentDate");
+    if (savedDate) currentDate = savedDate;
+
+    renderDaysTimeline();
     renderMealNotes();
+
     setupSwipeToDelete();
 }
 
