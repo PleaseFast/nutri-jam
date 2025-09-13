@@ -80,6 +80,7 @@ function setupAddPage() {
     const carbInput = document.getElementById('carbInput');
     const descriptionInput = document.getElementById('descriptionInput');
     const calDisplay = document.getElementById('calInputDisplay');
+    const backButton = document.getElementById('backButton');
     const addNoteButton = document.getElementById('addNoteButton');
 
     let editId = localStorage.getItem(EDIT_KEY);
@@ -101,6 +102,12 @@ function setupAddPage() {
         // defaults
         calDisplay.textContent = '0';
     }
+
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        window.history.back(); // вернёт на предыдущую страницу
+      });
+    }    
 
     function updateButtonText() {
         addNoteButton.textContent = editId ? 'Сохранить запись' : 'Добавить запись';
@@ -279,6 +286,63 @@ function setupMainPage() {
         }
 
     }
+
+    function updateArrowVisibility() {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayEl = daysTimeline.querySelector(`.day_item[data-date="${todayStr}"]`);
+        const leftArrow = document.getElementById("arrowLeft");
+        const rightArrow = document.getElementById("arrowRight");
+    
+        if (!todayEl || !leftArrow || !rightArrow) return;
+    
+        const rect = todayEl.getBoundingClientRect();
+        const parentRect = daysTimeline.getBoundingClientRect();
+    
+        // Если сегодня левее видимой области
+        if (rect.right < parentRect.left) {
+            leftArrow.classList.remove("hidden");
+            rightArrow.classList.add("hidden");
+        }
+        // Если сегодня правее видимой области
+        else if (rect.left > parentRect.right) {
+            rightArrow.classList.remove("hidden");
+            leftArrow.classList.add("hidden");
+        }
+        // Если сегодня видно
+        else {
+            leftArrow.classList.add("hidden");
+            rightArrow.classList.add("hidden");
+        }
+    }
+    
+    // навешиваем обработчики
+    document.getElementById("arrowLeft").onclick = () => {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayEl = daysTimeline.querySelector(`.day_item[data-date="${todayStr}"]`);
+        if (todayEl) {
+            todayEl.click();
+            todayEl.scrollIntoView({ behavior: "smooth", inline: "center" });
+        }
+    };
+    
+    document.getElementById("arrowRight").onclick = () => {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayEl = daysTimeline.querySelector(`.day_item[data-date="${todayStr}"]`);
+        if (todayEl) {
+            todayEl.click();
+            todayEl.scrollIntoView({ behavior: "smooth", inline: "center" });
+        }
+    };
+    
+    // следим за скроллом и ресайзом
+    daysTimeline.addEventListener("scroll", updateArrowVisibility);
+    window.addEventListener("resize", updateArrowVisibility);
+    
+    // вызов после рендера
+    renderDaysTimeline();
+    renderMealNotes();
+    setupSwipeToDelete();
+    updateArrowVisibility();
 
     function renderMealNotes() {
         const notes = loadNotes(currentDate);

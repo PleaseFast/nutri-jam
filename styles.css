@@ -466,13 +466,18 @@ body {
     background-color: #FFE6E6;
 }
 
+
+
 .days_timeline {
     display: flex;
     gap: 8px;
     overflow-x: auto;
     padding: 8px;
-    margin-bottom: 16px;
     scroll-snap-type: x mandatory;
+  }
+
+  .days_timeline::-webkit-scrollbar {
+    display: none;
   }
   
   .day_item {
@@ -493,7 +498,70 @@ body {
     background: #4447F4;
     color: #fff;
   }
+
+
+
+  .days_timeline_wrapper {
+    position: relative;
+    margin-bottom: 16px;
+  }
   
+  .arrow_button {
+    position: absolute;
+    bottom: 0%;
+    width: 28px;
+    height: 20px;
+    border-radius: 25%;
+    background: #4447F4;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 10; /* чтобы стрелки были поверх ленты */
+  }
+  
+  .arrow_button:hover {
+    background: #3335d1;
+    transform: scale(1.1);
+  }
+  
+  .arrow_button.hidden {
+    display: none;
+  }
+  
+  .arrow_button.left {
+    left: 4px; /* левый нижний угол */
+  }
+  
+  .arrow_button.right {
+    right: 4px; /* правый нижний угол */
+  }  
+  
+
+
+.back_button {
+  position: fixed; /* или fixed, если нужно «прибить» */
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #444;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back_button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 
 /* Анимации */
 @keyframes fadeIn {
