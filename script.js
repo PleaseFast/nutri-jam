@@ -83,6 +83,9 @@ function setupAddPage() {
     const backButton = document.getElementById('backButton');
     const addNoteButton = document.getElementById('addNoteButton');
 
+    const ingredientsList = document.getElementById('ingredientsList');
+    const addIngredientButton = document.getElementById('addIngredientButton');
+
     let editId = localStorage.getItem(EDIT_KEY);
 
     // preload при редактировании
@@ -97,6 +100,13 @@ function setupAddPage() {
             carbInput.value = note.nutri_values.carbs || 0;
             descriptionInput.value = note.description || '';
             calDisplay.textContent = (note.cals_line || 0).toLocaleString();
+
+            if (note.ingredients && Array.isArray(note.ingredients)) {
+                note.ingredients.forEach(ing => {
+                    createIngredientItem(ing);
+                });
+                recalcAllIngredients();
+            }
         }
     } else {
         // defaults
@@ -183,6 +193,7 @@ function setupAddPage() {
         const carbs = parseFloat(carbInput.value) || 0;
         const description = (descriptionInput.value || '').trim();
         const cals = calculateCalories(protein, fat, carbs);
+        const ingredients = collectIngredients();
 
         const savedDate = localStorage.getItem("currentDate");
         const targetDate = savedDate || currentDate;
@@ -197,7 +208,8 @@ function setupAddPage() {
                         nutri_values: { protein, fat, carbs },
                         cals_line: cals,
                         description: description || '',
-                        settime: getCurrentTime()
+                        settime: getCurrentTime(),
+                        ingredients
                     };
                 }
                 return n;
@@ -209,7 +221,8 @@ function setupAddPage() {
                 nutri_values: { protein, fat, carbs },
                 cals_line: cals,
                 description: description || '',
-                settime: getCurrentTime()
+                settime: getCurrentTime(),
+                ingredients
             };
             notes.push(note);
         }
@@ -218,6 +231,121 @@ function setupAddPage() {
         // после сохранения возвращаемся на главную
         window.location.href = 'index.html';
     });
+
+    function createIngredientItem(initial = {}) {
+        const div = document.createElement('div');
+        div.className = 'ingredient_item';
+
+        div.innerHTML = `
+            <div>
+            <label>Название</label>
+            <input type="text" placeholder="Яйцо" class="ing_name" value="${initial.name || ''}">
+            </div>
+            <div>
+            <label>Описание</label>
+            <textarea placeholder="Скрембл на сковороде за 5 минут" class="ing_desc">${initial.desc || ''}</textarea>
+            </div>
+            <div>
+            <label>Масса, г</label>
+            <input type="number" class="ing_mass" value="${initial.mass || ''}">
+            </div>
+            <div class="ingredient_kbju_row">
+            <div class="kbju_field">
+                <label>Б, г</label>
+                <input type="number" class="ing_prot" value="${initial.protein || ''}">
+            </div>
+            <div class="kbju_field">
+                <label>Ж, г</label>
+                <input type="number" class="ing_fat" value="${initial.fat || ''}">
+            </div>
+            <div class="kbju_field">
+                <label>У, г</label>
+                <input type="number" class="ing_carb" value="${initial.carbs || ''}">
+            </div>
+            <div class="kbju_field">
+                <label>Кал</label>
+                <div class="ing_cal">${initial.calories || 0}</div>
+            </div>
+            </div>
+        `;
+
+        const protInput = div.querySelector('.ing_prot');
+        const fatInput = div.querySelector('.ing_fat');
+        const carbInput = div.querySelector('.ing_carb');
+        const calCell = div.querySelector('.ing_cal');
+
+        function recalc() {
+            const p = parseFloat(protInput.value) || 0;
+            const f = parseFloat(fatInput.value) || 0;
+            const c = parseFloat(carbInput.value) || 0;
+            const cal = calculateCalories(p, f, c);
+            calCell.textContent = cal;
+            recalcAllIngredients();
+        }
+
+        [protInput, fatInput, carbInput].forEach(el => el.addEventListener('input', recalc));
+
+        ingredientsList.appendChild(div);
+    }
+
+    // суммируем все ингредиенты и блокируем верхние поля
+    function recalcAllIngredients() {
+        const items = ingredientsList.querySelectorAll('.ingredient_item');
+        let totalP = 0, totalF = 0, totalC = 0, totalCal = 0;
+    
+        items.forEach(div => {
+        const p = parseFloat(div.querySelector('.ing_prot').value) || 0;
+        const f = parseFloat(div.querySelector('.ing_fat').value) || 0;
+        const c = parseFloat(div.querySelector('.ing_carb').value) || 0;
+        const cal = calculateCalories(p, f, c);
+    
+        totalP += p;
+        totalF += f;
+        totalC += c;
+        totalCal += cal;
+        });
+    
+        if (items.length > 0) {
+        proteinInput.value = totalP;
+        fatInput.value = totalF;
+        carbInput.value = totalC;
+        calDisplay.textContent = totalCal;
+        proteinInput.disabled = true;
+        fatInput.disabled = true;
+        carbInput.disabled = true;
+        } else {
+        proteinInput.disabled = false;
+        fatInput.disabled = false;
+        carbInput.disabled = false;
+        }
+    
+        updateLeftValues();
+    }
+    
+    if (addIngredientButton) {
+        addIngredientButton.addEventListener('click', () => {
+        createIngredientItem();
+        });
+    }
+
+    function collectIngredients() {
+    const list = [];
+    ingredientsList.querySelectorAll('.ingredient_item').forEach(div => {
+        const protein = parseFloat(div.querySelector('.ing_prot').value) || 0;
+        const fat = parseFloat(div.querySelector('.ing_fat').value) || 0;
+        const carbs = parseFloat(div.querySelector('.ing_carb').value) || 0;
+        list.push({
+        name: div.querySelector('.ing_name').value || '',
+        desc: div.querySelector('.ing_desc').value || '',
+        mass: parseFloat(div.querySelector('.ing_mass').value) || 0,
+        protein,
+        fat,
+        carbs,
+        calories: calculateCalories(protein, fat, carbs)
+        });
+    });
+    return list;
+    }
 
     // фокус на первое поле
     if (proteinInput) proteinInput.focus();
@@ -254,6 +382,10 @@ function setupMainPage() {
       
             const div = document.createElement("div");
             div.className = "day_item" + (dateStr === currentDate ? " active" : "");
+            const todayStr = new Date().toISOString().slice(0, 10);
+            div.className = "day_item"
+                + (dateStr === currentDate ? " active" : "")
+                + (dateStr === todayStr ? " today" : "");
             div.dataset.date = dateStr;
       
             div.innerHTML = `
@@ -411,6 +543,23 @@ function setupMainPage() {
                     <div class="desc_text">${note.description}</div>
                 </div>
             `;
+        }
+
+        if (note.ingredients && note.ingredients.length > 0) {
+            html += `<div class="ingredients_desc">`;
+            note.ingredients.forEach((ing, i) => {
+                html += `
+                    <div class="ingredient_line">
+                        <light>${ing.name || " "}</light>
+                        ${ing.mass ? ` — ${ing.mass} г` : ''}
+                        ${ing.protein || ing.fat || ing.carbs ? 
+                            ` (${ing.protein}/${ing.fat}/${ing.carbs}), ${ing.calories} кал`
+                            : ''
+                        }
+                    </div>
+                 `;
+               });
+               html += `</div>`;
         }
 
         div.innerHTML = html;
