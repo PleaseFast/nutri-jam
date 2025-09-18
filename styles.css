@@ -13,17 +13,21 @@ body {
 }
 
 .app {
-    max-width: 370px;
+    max-width: 370px;    
     margin: 0 auto;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     position: relative;
     background-color: #F3F3F5;
 }
 
 /* Главный экран */
 .main-screen {
-    padding: 16px;
-    padding-bottom: 100px;
+    padding: 16px 16px 0px 16px;
+    height: 100vh;
+    flex: 1;
+    overflow-y: auto;
 }
 
 /* Дневные КБЖУ */
@@ -250,21 +254,27 @@ body {
 
 /* Кнопка добавления */
 .new_note_button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
+    position: absolute;
+    bottom: 81px;
+    right: 24px;
     width: 56px;
-    height: 56px;
+    height: 64px;
     background-color: #4447F4;
-    border-radius: 50%;
+    border-radius: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(68, 71, 244, 0.3);
     cursor: pointer;
     transition: transform 0.2s ease;
-    z-index: 100;
+    z-index: 1000;
 }
+
+.new_note_button img.fab_icon {
+    width: 16px;
+    height: 16px;
+    pointer-events: none; /* чтобы клик шел по кнопке, а не по картинке */
+  }
 
 .new_note_button:hover {
     transform: scale(1.05);
@@ -272,12 +282,6 @@ body {
 
 .new_note_button:active {
     transform: scale(0.95);
-}
-
-.plus {
-    color: #FFFFFF;
-    font-size: 24px;
-    font-weight: 300;
 }
 
 /* Модальное окно */
@@ -468,11 +472,18 @@ body {
 
 
 
+.days_timeline_container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
 .days_timeline {
     display: flex;
-    gap: 8px;
+    gap: 7px;
     overflow-x: auto;
     padding: 8px;
+    justify-content: space-between;
+    white-space: nowrap;
     scroll-snap-type: x mandatory;
   }
 
@@ -481,33 +492,37 @@ body {
   }
   
   .day_item {
-    min-width: 70px;
-    padding: 8px 12px;
+    width: 42.3px;
+    padding: 12px;
     border-radius: 8px;
-    background: #fff;
     text-align: center;
     cursor: pointer;
     flex-shrink: 0;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 18px;
     scroll-snap-align: center;
     transition: background 0.2s;
   }
   
+  .day_week {
+    font-size: 16px;
+    opacity: 0.6;
+  }
+  
   .day_item.active {
-    background: #4447F4;
-    color: #fff;
+    background: #fff;
+    color: #4447F4;
   }
 
   .day_item.today {
-    border: 2px solid #4447F4;
+    color: #4447F4;
   }
 
 
 
   .days_timeline_wrapper {
     position: relative;
-    margin-bottom: 16px;
+    bottom: 24px;
   }
   
   .arrow_button {
@@ -529,7 +544,7 @@ body {
   }
   
   .arrow_button:hover {
-    background: #3335d1;
+    /* background: #3335d1; */
     transform: scale(1.1);
   }
   
@@ -538,13 +553,38 @@ body {
   }
   
   .arrow_button.left {
-    left: 4px; /* левый нижний угол */
+    left: 10px; /* левый нижний угол */
   }
   
   .arrow_button.right {
-    right: 4px; /* правый нижний угол */
+    right: 10px; /* правый нижний угол */
   }  
   
+
+
+.month_label_wrapper {
+  position: relative;
+}
+
+.month_label {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;                /* скрыта по умолчанию */
+  transform: translateY(-5px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.month_label.show {
+  opacity: 1;
+  transform: translateY(0);
+  color: rgba(0, 0, 0, 0.6); /* чуть ярче при показе */
+}
+
 
 
 .back_button {
@@ -635,7 +675,81 @@ input:disabled, textarea:disabled {
     color: rgba(0, 0, 0, 0.4);   /* более прозрачный текст */
     -webkit-text-fill-color: rgba(0, 0, 0, 0.4); /* для Safari */
 }
+
+
+
+.bottom_nav {
+  width: 100%;
+  height: 57px;
+  background: #fff;
+  border-top: 1px solid #DADADA;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.nav_item {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #BBBBBB;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav_item img {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 2px;
+  opacity: 0.6;
+}
+
+.nav_item img.icon_active { display: none; }
+.nav_item.active img.icon_active { display: inline; }
+.nav_item.active img.icon_default { display: none; }
+
+.nav_item.active {
+  color: #4447F4;
+}
+
+.nav_item.active img {
+  opacity: 1;
+  filter: none;
+}
+
   
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal_content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 280px;
+}
+
+.modal_actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
 
 
 /* Анимации */

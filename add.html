@@ -63,6 +63,32 @@
     </div>
   </div>
 
+  <div id="saveIngredientDialog" class="modal hidden">
+    <div class="modal_content">
+      <h3>Сохранить ингредиент</h3>
+      <div>
+        <label>Белки (на 100г)</label>
+        <input type="number" id="saveProt" value="0">
+      </div>
+      <div>
+        <label>Жиры (на 100г)</label>
+        <input type="number" id="saveFat" value="0">
+      </div>
+      <div>
+        <label>Углеводы (на 100г)</label>
+        <input type="number" id="saveCarb" value="0">
+      </div>
+      <div>
+        Калории: <span id="saveCal">0</span>
+      </div>
+      <div class="modal_actions">
+        <button id="cancelSaveBtn">Отмена</button>
+        <button id="confirmSaveBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+  
+
   <script src="script.js"></script>
 </body>
 </html>

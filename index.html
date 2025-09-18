@@ -10,14 +10,35 @@
     <div class="app">
         <!-- Главный экран -->
         <div class="main-screen" id="mainScreen">
-            <!-- Список дней -->
+            <div class="days_timeline_container">
+                <!-- Метка месяца (поверх, сверху) -->
+                <div class="month_label_wrapper">
+                  <div class="month_label" id="monthLabel"></div>
+                </div>
+              
+                <!-- Генерация дней будет происходить именно здесь -->
+                <div class="days_timeline" id="daysTimeline"></div>
+              
+                <!-- Стрелки (поверх, снизу) -->
+                <div class="days_timeline_wrapper">
+                  <div class="arrow_button left" id="arrowLeft">⭠</div>
+                  <div class="arrow_button right" id="arrowRight">⭢</div>
+                </div>
+              </div>
+              
+            <!-- Список дней
+            <div class="month_label_wrapper">
+                <div class="month_label" id="monthLabel"></div>
+              </div>
+            
             <div class="days_timeline" id="daysTimeline"></div>
 
             <div class="days_timeline_wrapper">
+                <div class="month_label" id="monthLabel"></div>
                 <div class="arrow_button left" id="arrowLeft">⭠</div>
                 <div class="days_timeline" id="daysTimeline"></div>
                 <div class="arrow_button right" id="arrowRight">⭢</div>
-              </div>
+              </div> -->
             <!-- Дневные КБЖУ -->
             <div class="day_nutri_amount" id="dayNutriAmount">
                 <div class="day_nutri_amount_core">
@@ -62,10 +83,11 @@
                     <!-- Записи будут добавляться динамически -->
                 </div>
             </div>
+        </div>
 
             <!-- Кнопка добавления записи -->
             <a href="add.html" class="new_note_button" id="newNoteButton">
-                <div class="plus">+</div>
+                <img src="assets/icons/plus.svg" alt="Добавить" class="fab_icon"></img>
               </a>
 
     <!-- Контекстное меню -->
@@ -73,8 +95,24 @@
         <div class="context-menu-item" id="editMenuItem">Редактировать</div>
         <div class="context-menu-item delete" id="deleteMenuItem">Удалить</div>
     </div>
+    
+    <!-- Нижняя панель навигации (bottom bar) -->
+    <nav class="bottom_nav">
+        <a href="index.html" class="nav_item" id="tabNotes">
+        <img src="assets/icons/notes_default.svg" alt="Записи" class="icon_default">
+        <img src="assets/icons/notes_active.svg" alt="Записи" class="icon_active">
+        <span>Записи</span>
+        </a>
+        <a href="recipes.html" class="nav_item" id="tabRecipes">
+        <img src="assets/icons/recipes_default.svg" alt="Рецепты" class="icon_default">
+        <img src="assets/icons/recipes_active.svg" alt="Рецепты" class="icon_active">
+        <span>Рецепты</span>
+        </a>
+    </nav>
 
     <script src="script.js"></script>
-
+    <script>
+        setupBottomNav('tabNotes');
+    </script>
 </body>
 </html>

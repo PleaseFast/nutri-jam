@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Рецепты</title>
+  <link rel="stylesheet" href="styles.css">   <!-- базовые общие -->
+  <link rel="stylesheet" href="recipes.css"> <!-- отдельные для рецептов -->
+</head>
+<body>
+  <div class="app">
+
+    <!-- контент -->
+    <main class="main-screen">
+      <!-- переключатель -->
+      <div class="recipes_tabs">
+        <button class="tab_btn active" data-tab="dishes">Блюдо</button>
+        <button class="tab_btn" data-tab="ingredients">Ингредиенты</button>
+      </div>
+
+      <!-- карточка-контейнер -->
+      <div class="card_container">
+        <div class="tab_content" id="tabDishes">
+          <div class="empty_placeholder">Тут пока пусто</div>
+        </div>
+        <div class="tab_content hidden" id="tabIngredients">
+          <div class="empty_placeholder">Тут пока пусто</div>
+        </div>
+      </div>
+    </main>
+
+  <!-- Нижняя панель навигации (bottom bar) -->
+    <nav class="bottom_nav">
+        <a href="index.html" class="nav_item" id="tabNotes">
+          <img src="assets/icons/notes_default.svg" alt="Записи" class="icon_default">
+          <img src="assets/icons/notes_active.svg" alt="Записи" class="icon_active">
+          <span>Записи</span>
+        </a>
+        <a href="recipes.html" class="nav_item" id="tabRecipes">
+          <img src="assets/icons/recipes_default.svg" alt="Рецепты" class="icon_default">
+          <img src="assets/icons/recipes_active.svg" alt="Рецепты" class="icon_active">
+          <span>Рецепты</span>
+        </a>
+      </nav>
+
+  <script src="script.js"></script>
+  <script src="recipes.js"></script>
+  <script>
+    setupBottomNav('tabRecipes');
+    setupRecipesPage();
+  </script>
+</body>
+</html>

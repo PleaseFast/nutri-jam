@@ -1,0 +1,45 @@
+/* ---------------- recipes.html styles ---------------- */
+
+.recipes_tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+  }
+  
+  .tab_btn {
+    flex: 1;
+    padding: 14px 0;
+    background: none;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+  }
+  
+  .tab_btn.active {
+    color: #1E90FF;
+    border-bottom: 2px solid #1E90FF;
+  }
+  
+  .card_container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  }
+  
+  .tab_content.hidden {
+    display: none;
+  }
+  
+  .empty_placeholder {
+    text-align: center;
+    color: rgba(26, 26, 26, 0.6);
+    padding: 40px 0;
+    font-size: 14px;
+  }
+  

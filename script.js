@@ -73,6 +73,13 @@ function getDailyTotals(date = currentDate) {
     return getDailyTotalsExcluding(null, date);
 }
 
+function setupBottomNav(activeTabId) {
+    const active = document.getElementById(activeTabId);
+    if (active) {
+      active.classList.add('active');
+    }
+  }  
+
 /* ---------------- add.html ---------------- */
 function setupAddPage() {
     const proteinInput = document.getElementById('proteinInput');
@@ -238,7 +245,7 @@ function setupAddPage() {
 
         div.innerHTML = `
             <div>
-            <label>Название</label>
+            <button type="button" class="save_ing_btn" title="Сохранить ингредиент">💾</button>
             <input type="text" placeholder="Яйцо" class="ing_name" value="${initial.name || ''}">
             </div>
             <div>
@@ -273,6 +280,7 @@ function setupAddPage() {
         const fatInput = div.querySelector('.ing_fat');
         const carbInput = div.querySelector('.ing_carb');
         const calCell = div.querySelector('.ing_cal');
+        const toRecipesBtn = div.querySelector('.save_ing_btn');
 
         function recalc() {
             const p = parseFloat(protInput.value) || 0;
@@ -282,6 +290,16 @@ function setupAddPage() {
             calCell.textContent = cal;
             recalcAllIngredients();
         }
+        
+        if (toRecipesBtn) {
+            toRecipesBtn.addEventListener('click', () => {
+                openSaveIngredientDialog({
+                    name: div.querySelector('.ing_name').value,
+                    desc: div.querySelector('.ing_desc').value
+                });
+            });
+        }
+
 
         [protInput, fatInput, carbInput].forEach(el => el.addEventListener('input', recalc));
 
@@ -347,6 +365,58 @@ function setupAddPage() {
     return list;
     }
 
+    function openSaveIngredientDialog(baseData) {
+        const dialog = document.getElementById('saveIngredientDialog');
+        const protInput = document.getElementById('saveProt');
+        const fatInput = document.getElementById('saveFat');
+        const carbInput = document.getElementById('saveCarb');
+        const calSpan = document.getElementById('saveCal');
+        const cancelBtn = document.getElementById('cancelSaveBtn');
+        const confirmBtn = document.getElementById('confirmSaveBtn');
+
+        dialog.classList.remove('hidden');
+
+        function recalc() {
+            const p = parseFloat(protInput.value) || 0;
+            const f = parseFloat(fatInput.value) || 0;
+            const c = parseFloat(carbInput.value) || 0;
+            calSpan.textContent = calculateCalories(p, f, c);
+        }
+
+        [protInput, fatInput, carbInput].forEach(el => {
+            el.addEventListener('input', recalc);
+        });
+
+        cancelBtn.onclick = () => {
+            dialog.classList.add('hidden');
+        };
+
+        confirmBtn.onclick = () => {
+            const p = parseFloat(protInput.value) || 0;
+            const f = parseFloat(fatInput.value) || 0;
+            const c = parseFloat(carbInput.value) || 0;
+            const ingredient = {
+            name: baseData.name || 'Ингредиент',
+            desc: baseData.desc || '',
+            protein: p,
+            fat: f,
+            carbs: c,
+            calories: calculateCalories(p, f, c)
+            };
+
+            // сохраняем в localStorage
+            const raw = localStorage.getItem('SAVED_INGREDIENTS');
+            const list = raw ? JSON.parse(raw) : [];
+            list.push(ingredient);
+            localStorage.setItem('SAVED_INGREDIENTS', JSON.stringify(list));
+
+            dialog.classList.add('hidden');
+        };
+
+        recalc();
+    }
+
+
     // фокус на первое поле
     if (proteinInput) proteinInput.focus();
 }
@@ -378,7 +448,7 @@ function setupMainPage() {
       
             const dayNumber = date.getDate();
             const weekday = date.toLocaleDateString("ru-RU", { weekday: "short" });
-            const monthNumber = date.getMonth() + 1;
+            // const monthNumber = date.getMonth() + 1;
       
             const div = document.createElement("div");
             div.className = "day_item" + (dateStr === currentDate ? " active" : "");
@@ -389,8 +459,8 @@ function setupMainPage() {
             div.dataset.date = dateStr;
       
             div.innerHTML = `
-                <div class="day_number">${dayNumber}.${monthNumber}</div>
                 <div class="day_week">${weekday}</div>
+                <div class="day_number">${dayNumber}</div>
             `;
       
             div.addEventListener("click", () => {
@@ -411,6 +481,44 @@ function setupMainPage() {
                  
             daysTimeline.appendChild(div);
         }
+
+        const monthLabel = document.getElementById("monthLabel");
+        let lastMonth = null;
+        let fadeTimeout = null;
+
+        function updateMonthLabel() {
+            const items = Array.from(daysTimeline.querySelectorAll(".day_item"));
+            if (!items.length) return;
+          
+            const rect = daysTimeline.getBoundingClientRect();
+            const firstVisible = items.find(el => {
+              const elRect = el.getBoundingClientRect();
+              return elRect.right > rect.left + 20;
+            });
+          
+            if (firstVisible) {
+              const dateStr = firstVisible.dataset.date;
+              const date = new Date(dateStr);
+              const monthName = date.toLocaleDateString("ru-RU", { month: "short" });
+            //   const formatted = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+          
+              lastMonth = monthName;
+              monthLabel.textContent = monthName;
+          
+                // показать
+              monthLabel.classList.add("show");
+          
+                // убрать через 1.5 сек
+              clearTimeout(fadeTimeout);
+              fadeTimeout = setTimeout(() => {
+                monthLabel.classList.remove("show");
+              }, 1000);
+            }
+        }
+        
+        // обновляем при скролле
+        daysTimeline.addEventListener("scroll", updateMonthLabel);
+        updateMonthLabel();
 
         const activeDay = daysTimeline.querySelector(".day_item.active");
         if (activeDay) {
